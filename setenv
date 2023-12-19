@@ -1,0 +1,58 @@
+# This must be sourced in from the same directory to take effect!
+#
+if [ "${OSTYPE}" == "cygwin" ] ; then
+    echo "Setting up PYTHONPATH and PATH"
+    # read in common functions like exportaddpath:
+    . func.sh
+
+    # Make pyschunk available:
+    pushd .
+        #pyschunk:
+        cd ../pyschunk && source setenv
+    popd
+    exportaddwinpath PYTHONPATH "$(cygpath -w "${PWD}")"
+    exportaddpath    PATH       $PWD/bkstools/scripts
+    exportaddpath    PATH       $PWD/bkstools/demo
+
+    activate_path="./venv/Scripts/activate"
+
+elif [ "${OSTYPE}" == "linux-gnu" ] ; then
+    echo "Setting up PYTHONPATH and PATH"
+    export PYTHONPATH
+
+    # try to make pyschunk available:
+    if [ -d ../pyschunk ] ; then
+        pushd ../pyschunk
+            PYTHONPATH="${PYTHONPATH}:${PWD}"
+	        PATH="${PATH}:${PWD}/pyschunk/scripts"
+        popd
+    fi
+
+    PYTHONPATH=$PYTHONPATH:${PWD}
+    PATH=$PATH:$PWD/bkstools/scripts
+    PATH=$PATH:$PWD/bkstools/demo
+
+    activate_path="./venv/bin/activate"
+else
+    echo "Donnow how to handle OSTYPE \"${OSTPYE}\"!"
+    exit 1
+fi
+
+if [ "${VIRTUAL_ENV}" == "" ] ; then
+    if [ -f "${activate_path}" ]; then
+        echo "Activating Python virtual environment in \"$(realpath ./venv)\""
+        source "${activate_path}"
+    else
+        echo "No Python virtual environment in \"$(realpath ./venv)\" available."
+        echo "You might want to create one and activate it manually:"
+        echo "> make venv ; source ${activate_path}"
+    fi
+else
+    # a Python virtual environment seems to be already active
+    echo "A Python virtual environment is already active in \"${VIRTUAL_ENV}\"."
+    if [ "${VIRTUAL_ENV}" != "$(realpath ./venv)" ] ; then
+        echo "You might want to / have to switch to the BKSTools venv be deactivating"
+        echo "the current one and activate the BKSTools one:"
+        echo "> deactivate ; source ${activate_path}"
+    fi
+fi

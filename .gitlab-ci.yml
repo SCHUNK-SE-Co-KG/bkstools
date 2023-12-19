@@ -1,0 +1,114 @@
+stages:
+  - build
+  - release
+
+variables:
+  # Set the Python version
+  PYTHON_VERSION: "3.10"
+
+before_script:
+  - python3 -V
+  - python3 -m venv venv
+  - source venv/bin/activate
+
+#--------------------------------------------------------------------
+build:
+  stage: build
+  script:
+    - pip install chardet wheel Markdown   # Install building dependencies
+    - python3 setup.py sdist bdist_wheel   # Build the source distribution and wheel
+
+    - |
+      release_notes_file=bkstools/release.py
+      latest_release_note_txt=$(python3 - << EOF
+      found_start=False
+      found_first=False
+      found_end=False
+      with open( r"${release_notes_file}", "r", encoding="latin-1" ) as inputfile:
+          for l in inputfile.readlines():
+              if ( not found_start and "From newest to oldest" in l ):
+                  found_start = True
+                  continue
+              if ( found_start and not found_end and not found_first and r"- \b" in l ):
+                  found_first = True
+                  start_column = l.find( "-" )
+              elif ( found_start and not found_end and found_first and r"- \b" in l ):
+                  found_end = True
+              if ( not found_end and found_first ):
+                  ll = l[start_column:-1].replace( '"', r'\&quot' )
+                  if ( ll.startswith( "-" ) ):
+                      print( ll )
+                  else:
+                      print( "  " + ll)
+      EOF
+      )
+      latest_release_note=$(echo -e "${latest_release_note_txt}" \
+        | python3 -m markdown --output_format=xhtml              \
+        | tr '\r' ' ' | tr '\n' ' ' )
+
+      #echo "latest_release_note_txt=${latest_release_note_txt}" # for debugging
+      #echo "latest_release_note=${latest_release_note}"         # for debugging
+
+      #SaveVariables build.env   latest_release_note
+      echo "latest_release_note=${latest_release_note}" >> "build.env"
+
+      #---
+      BKSTOOLS_PROJECT_RELEASE=$(cd bkstools ; python3 -c "import release; print(release.PROJECT_RELEASE)")
+
+      echo "${CI_JOB_NAME}_CI_JOB_ID=\"${CI_JOB_ID}\"" >> "build.env"
+      echo "BKSTOOLS_PROJECT_RELEASE=\"${BKSTOOLS_PROJECT_RELEASE}\"" >> "build.env"
+      echo "gitlab_host=\"gitlab-test.cloud.schunk.com\"" >> "build.env"
+
+  artifacts:
+    paths:
+      - dist/*.whl
+      - dist/*.tar.gz
+    reports:
+      dotenv: build.env
+
+#--------------------------------------------------------------------
+release_job:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG                  # Run this job when a tag is created only
+  script:
+    - |
+      #Log 'Running release_job to create release in GitLab->Project->Releases'
+      echo 'Running release_job to create release in GitLab->Project->Releases'
+      # (Remark: no variable defined here can be used in the release.description below!)
+
+
+  release:
+    name: 'Release $CI_COMMIT_TAG'
+    description: "<h3> Description </h3>
+      <p> Automatically generated release for git tag <b>${CI_COMMIT_TAG}</b>. </p>
+
+      <h3> Branches: </h3>
+      <ul>
+        <li>BKSTools: <b>${CI_COMMIT_REF_NAME}</b> (${CI_COMMIT_SHA})</li>
+      </ul>
+
+      <h3> Release note: </h3>
+        ${latest_release_note}
+
+      <h3> Artifacts: </h3>
+        <ul>
+          <li> Created by
+               <a href='https://${gitlab_host}/python_stuff/BKSTools/-/pipelines/${CI_PIPELINE_ID}' >
+                   pipeline ${CI_PIPELINE_ID}
+               </a>
+          </li>
+          <li> <a href='https://${gitlab_host}/python_stuff/BKSTools/-/jobs/${build_CI_JOB_ID}' title='view CI job results in GitLab'>
+                   <img src='https://${gitlab_host}/uploads/-/system/project/avatar/73/BKSTools.png' width=32 height=32>
+                    &nbsp;
+                    BKSTools v${BKSTOOLS_PROJECT_RELEASE}
+               </a> &nbsp; - &nbsp;
+               <a href='https://${gitlab_host}/python_stuff/BKSTools/-/jobs/${build_CI_JOB_ID}/artifacts/raw/dist/bkstools-${BKSTOOLS_PROJECT_RELEASE}-py3-none-any.whl' title='download Python wheel for installation with pip, the Python paket manager'>
+                   [ &#x21E9; ]
+               </a>
+          </li>
+        </ul>"
+    tag_name: '$CI_COMMIT_TAG'
+    ref: '$CI_COMMIT_TAG'
+  dependencies:
+    - build
