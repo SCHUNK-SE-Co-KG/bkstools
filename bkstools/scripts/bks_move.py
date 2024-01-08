@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Move a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU) according to the parameters given.|n
+Move a SCHUNK BKS gripper (like EGI/EGU/EGK) according to the parameters given.|n
 |n
 You can provide a single absolute or relative target position or a sequence|n
 of (mixed) absolute or relative target positions. You can even|n

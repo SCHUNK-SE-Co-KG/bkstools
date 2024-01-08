@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Perform a cycle of grip and release movements with a BKS gripper (like EGI/EGU/EGK/EZU)|n
+Perform a cycle of grip and release movements with a BKS gripper (like EGI/EGU/EGK)|n
 |n
 On call the script will:|n
 - acknowledge pending errors (if required),|n

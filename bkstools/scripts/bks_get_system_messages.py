@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Get all or selected system messages of a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU)|n
+Get all or selected system messages of a SCHUNK BKS gripper (like EGI/EGU/EGK)|n
 |n
 Example usage:|n
 -  %(prog)s -H 10.49.57.13

@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Read and/or write parameters of a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU) according to the parameters given.|n
+Read and/or write parameters of a SCHUNK BKS gripper (like EGI/EGU/EGK) according to the parameters given.|n
 |n
 Example usage:|n
 -  %(prog)s -H 10.49.57.13 --list|n

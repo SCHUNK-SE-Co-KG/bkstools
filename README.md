@@ -1,6 +1,6 @@
 # BKSTools
 
-BKSTools is a Python package for communicating with newer SCHUNK grippers like EGU, EGK and EZU. These grippers are called BKS grippers
+BKSTools is a Python package for communicating with newer SCHUNK grippers like EGU and EGK. These grippers are called BKS grippers
 since they use the SCHUNK **B**au**K**asten**S**oftware.
 The BKSTools provide ready-to-use command line scripts and an API to interact with the BKS grippers from your own Python code.
 
@@ -109,7 +109,7 @@ usage: bks.py [-h] [-v] [-H HOST] [--force_reread] [--debug] [--debug_sleep] [--
               [--gpdtitle GPD_TITLE] [-o OUTPUT_FILE_NAME_WITHOUT_SUFFIX] [--separator SEPARATOR] [--use_comma]
               [other ...]
 
-Read and/or write parameters of a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU) according to the parameters given.
+Read and/or write parameters of a SCHUNK BKS gripper (like EGI/EGU/EGK) according to the parameters given.
 
 Example usage:
 - bks.py -H 10.49.57.13 --list

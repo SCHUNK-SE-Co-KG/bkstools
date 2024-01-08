@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Simple basic control (move, grip, release) of a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU)|n
+Simple basic control (move, grip, release) of a SCHUNK BKS gripper (like EGI/EGU/EGK)|n
 |n
 Example usage:|n
 -  %(prog)s -H 10.49.57.13

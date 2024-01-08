@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Simple interactive display of cyclic data of a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU), |n
+Simple interactive display of cyclic data of a SCHUNK BKS gripper (like EGI/EGU/EGK), |n
 including control- and statusword.|n
 |n
 Example usage:|n

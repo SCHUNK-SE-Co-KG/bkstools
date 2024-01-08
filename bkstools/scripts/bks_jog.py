@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Simple interactive moving of a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU) in position, speed or jog mode.|n
+Simple interactive moving of a SCHUNK BKS gripper (like EGI/EGU/EGK) in position, speed or jog mode.|n
 |n
 Example usage:|n
 -  %(prog)s -H 10.49.57.13 |n

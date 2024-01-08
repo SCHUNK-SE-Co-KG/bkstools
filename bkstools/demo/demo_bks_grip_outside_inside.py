@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Perform a cycle of outside gripping, releasing, inside gripping releasing with a BKS gripper (like EGI/EGU/EGK/EZU)|n
+Perform a cycle of outside gripping, releasing, inside gripping releasing with a BKS gripper (like EGI/EGU/EGK)|n
 |n
 Example usage:|n
 -  %(prog)s -H 10.49.57.13

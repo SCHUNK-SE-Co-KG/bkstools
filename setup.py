@@ -116,7 +116,7 @@ try:
 
         # What does your project relate to?
         keywords =
-            'SCHUNK BKS EGI EGU EGK EZU',
+            'SCHUNK BKS EGI EGU EGK',
 
         packages = [
             "bkstools",

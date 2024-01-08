@@ -4,7 +4,7 @@
 #
 # @author: Dirk Osswald
 '''
-Grip (or release) with a SCHUNK BKS gripper (like EGI/EGU/EGK/EZU) according to the parameters given.|n
+Grip (or release) with a SCHUNK BKS gripper (like EGI/EGU/EGK) according to the parameters given.|n
 |n
 Example usage:|n
 - Perform a "BasicGrip":|n
