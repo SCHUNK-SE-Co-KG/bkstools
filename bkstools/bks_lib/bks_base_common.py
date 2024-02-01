@@ -10,7 +10,7 @@ Created on 2022-03-07
 
 import struct
 
-from pyschunk.generated.generated_enums import eCmdCode, eErrorCode  # @UnusedImport
+from pyschunk.generated.generated_enums import eCmdCode, eErrorCode, eMotorType, eBksUserLevel, eFirmwareStorage, eGripperType, eBksReferencingType, eFieldbusType, eBrakeChopperMode   # @UnusedImport
 from pyschunk.tools.util import GetPersistantDict, enum
 from bkstools.bks_lib import hms
 from bkstools.bks_lib.debug import Print, Error, Debug, Var, ApplicationError, InsufficientAccessRights, InsufficientReadRights, InsufficientWriteRights, ControlledFromOtherChannel, ServiceNotAvailable, UnsupportedCommand  # @UnusedImport
@@ -95,11 +95,13 @@ def Str2Value( valuestr ):
     except (NameError, TypeError):
         #uninterpretable string
 
-        # try SMP command codes
-        try:
-            return eCmdCode[valuestr]
-        except KeyError:
-            return valuestr
+        # try known enums like SMP command codes
+        for an_enum in (eCmdCode, eMotorType, eBksUserLevel, eFirmwareStorage, eGripperType, eBksReferencingType, eFieldbusType, eBrakeChopperMode):
+            try:
+                return an_enum[valuestr]
+            except KeyError:
+                continue
+        return valuestr
 
 def uint32_to_int32( uint32 ):
     """return the value of uint32 interpreted as an int32
@@ -150,6 +152,37 @@ class BKSBaseCommon(object):
 
         self.settings = self.GetSettings(host)
         self.data = self.settings.setdefault( "data", None )
+
+        # some parameter values never change at runtime, so we only have to read them once.
+        # So implement some caching for the following parameters:
+        self.parameters_to_cache = [ "dead_load_kg",
+                                     "module_type",
+                                     "max_phys_stroke",
+                                     "mb_detect_time",
+                                     "min_vel",
+                                     "max_vel",
+                                     "max_grp_vel",
+                                     "min_grp_force",
+                                     "max_grp_force",
+                                     "max_allow_force",
+                                     "min_err_mot_volt",
+                                     "max_err_mot_volt",
+                                     "min_err_lgc_volt",
+                                     "max_err_lgc_volt",
+                                     "min_err_lgc_temp",
+                                     "max_err_lgc_temp",
+                                     "min_wrn_lgc_temp",
+                                     "max_wrn_lgc_temp",
+                                     "serial_no_txt",
+                                     "sw_build_date",
+                                     "sw_build_time",
+                                     "sw_version_num",
+                                     "sw_version_txt",
+                                     "comm_version_txt",
+                                     "fieldbus_type",
+                                     "mac_addr" ]
+        self.index_is_cachable = []          # cannot be initialized yet, must be done in SetAttributes
+        self.cached_index_to_value = dict()
 
     def UpdateEnum( self, d ):
         raise NotImplementedError() # derived classes must implement this
@@ -213,6 +246,12 @@ class BKSBaseCommon(object):
                 setattr( self.__class__,
                          "system_state_motion_engine_state",
                          property( lambda self: (self.system_state &0x000000ff) ) )     #(no setter needed since read only)
+
+        for name in self.parameters_to_cache:
+            try:
+                self.index_is_cachable.append( self.GetIndexOfName( name ) )
+            except ApplicationError:
+                pass # ignore e.g. unknown parameter name (not all parameters are available for all fieldbus types)
 
     def SetupControlword( self ):
         #-- The bits of the control word
@@ -370,13 +409,22 @@ class BKSBaseCommon(object):
 
         index = self.MakeIndex( index_or_name )
 
+        is_cachable = index in self.index_is_cachable
+        if ( is_cachable and index in self.cached_index_to_value ):
+            return self.cached_index_to_value[ index ]
+
         if ( datatype is None ):
             if ( len( self.data[index]["datatype"] ) == 1 ):
                 datatype = self.data[index]["datatype"][0]
             else:
                 return self.GetStructuredValue( index )
 
-        return self.UpdateValue( index_or_name, datatype, index )
+        value = self.UpdateValue( index_or_name, datatype, index )
+        if ( is_cachable ):
+            self.cached_index_to_value[ index ] = value
+
+        return value
+
 
     def UpdateValue( self, index_or_name, datatype, index ):
         raise NotImplementedError() # must be implemented by drived class

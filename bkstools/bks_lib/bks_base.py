@@ -16,8 +16,8 @@ from bkstools.bks_lib.bks_http import BKS_HTTP
 import time
 
 
-#                         1              12 3   32 4 5   54 6 7  78     89  96
-rex_serial = re.compile( "(COM\d+|/dev/.+)(,(\d+))?(,(\d+))?(,(\d)([NEO])(\d))?" )
+#                         1                 12 3   32 4 5   54 6 7  78     89  96
+rex_serial = re.compile( "(COM\d+|/dev/[^,]+)(,(\d+))?(,(\d+))?(,(\d)([NEO])(\d))?" )
 
 def GetModbusSettings( host ):
     mob_serial = rex_serial.match( host )

@@ -11,9 +11,15 @@ A Python installation of version 3.7 or above is required. The installation of P
 The installation of the bkstools package using pip, the python package manager, is described below.
 
 ### Packages
-For now SCHUNK provides prebuilt packages for the [pip](https://pypi.org/project/pip/) python package manager on request only. These packages are called "wheels" and have a *.whl file extension.
+Since version 0.0.2.27_2024-06-18 prebuilt packages for the [pip](https://pypi.org/project/pip/) python package manager can be downloaded automatically from the pypi website.
 
 #### Package generation
+Note: package generation is no longer needed, see "Package installation using pip" blow.
+
+
+If you still want to / have to create packages yourself here is how:
+
+The packages used by pip are called "wheels" and have a *.whl file extension.
 For generating the *.whl package file on your own you can download the whole project from https://github.com/SCHUNK-SE-Co-KG/bkstools.git or simply clone it from there.
 To clone it use:
 ```bash
@@ -29,6 +35,19 @@ make bdist_wheel
 This will generate e.g. `dist/bkstools-0.0.2.25-py3-none-any.whl`.
 
 #### Package installation using pip
+
+Since version 0.0.2.27_2024-06-18 prebuilt packages of the BKSTools are available automatically (internet connection required). This simplifies installation
+to a simple:
+```bash
+pip install bkstools
+```
+for a new installation. Or for an update to:
+```bash
+pip install --upgrade bkstools
+```
+
+
+If you still want to / have to install from local package files here is how:
 
 For the following description lets assume that you have something like the following file:
 - `PATH_TO/bkstools-0.0.2.25-py3-none-any.whl`
@@ -56,7 +75,14 @@ venv\Scripts\activate.bat  # activate the new virtual environment
 ```
 
 ### Package installation
-To install the actual BKSTools package use:
+To install the actual BKSTools package from the online Python Package Index (PyPI):
+```pip install bkstools```
+for a new installation, or
+```pip install --upgrade bkstools```
+for an update
+
+
+When installing from local package files use:
 
 On Linux:
 ```pip install PATH_TO/pyschunk-5.3.0.3-py3-none-any.whl PATH_TO/bkstools-0.0.2.24-py3-none-any.whl```

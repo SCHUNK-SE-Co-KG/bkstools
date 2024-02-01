@@ -133,6 +133,39 @@ def main():
     nb_loops = 0
     nb_errors = 0
     nb_warnings = 0
+
+    def CheckForErrors( bks, auto_acknowledge ):
+        #--- Check for errors / warnings:
+        nonlocal nb_errors, nb_warnings
+        err_code = bks.err_code
+        wrn_code = bks.wrn_code
+
+        try:
+            wc_str = bks.enums["wrn_code"].GetName(wrn_code, "?" )
+        except KeyError:
+            wc_str = "?"
+        try:
+            ec_str = bks.enums["err_code"].GetName(err_code, "?" )
+        except KeyError:
+            ec_str = "?"
+
+        if ( err_code != 0 ):
+            if ( auto_acknowledge ):
+                bks.command_code = eCmdCode.CMD_ACK
+                Print( f"!!!\n!!! Gripper reports error 0x{err_code:02x} ({ec_str}). Ignored!\n!!!" )
+                nb_errors += 1
+            else:
+                raise ApplicationError( f"Gripper reports error 0x{err_code:02x} ({ec_str}). Giving Up." )
+
+        if ( wrn_code == bks.enums["wrn_code"]["WRN_NOT_FEASIBLE"] ):
+            bks.sys_msg_req = 0
+            msg = bks.sys_msg_buffer
+            raise ApplicationError( f"Gripper reports command not feasible! Details from syslog: {msg}" )
+
+        elif ( wrn_code != 0 ):
+            nb_warnings += 1
+            Print( f"!!! Gripper reports warning 0x{wrn_code:02x} ({wc_str}). Ignored." )
+
     try:
         while looping:
             try:
@@ -164,29 +197,7 @@ def main():
                     #    # only SERVCICE can set set_acc
                     #    pass # TODO: give some indication that setting the acceleration failed
 
-                    #--- Check for errors / warnings:
-                    err_code = bks.err_code
-                    wrn_code = bks.wrn_code
-
-                    try:
-                        wc_str = bks.enums["wrn_code"].GetName(wrn_code, "?" )
-                    except KeyError:
-                        wc_str = "?"
-                    try:
-                        ec_str = bks.enums["err_code"].GetName(err_code, "?" )
-                    except KeyError:
-                        ec_str = "?"
-
-                    if ( err_code != 0 ):
-                        if ( args.auto_acknowledge ):
-                            bks.command_code = eCmdCode.CMD_ACK
-                            Print( f"!!!\n!!! Gripper reports error 0x{err_code:02x} ({ec_str}). Ignored!\n!!!" )
-                            nb_errors += 1
-                        else:
-                            raise ApplicationError( f"Gripper reports error 0x{err_code:02x} ({ec_str}). Giving Up." )
-                    if ( wrn_code != 0 ):
-                        nb_warnings += 1
-                        Print( f"!!! Gripper reports warning 0x{wrn_code:02x} ({wc_str}). Ignored." )
+                    CheckForErrors( bks, args.auto_acknowledge)
 
                     time.sleep(0.1)
                     if ( move_relative ):
@@ -206,11 +217,16 @@ def main():
                     t0 = now
                     ttimeout = t0 + GetMovementTime( bks.actual_pos, target_pos_abs, v, a ) + 1.0
 
+                    # check for errors / warnings once after command code was set:
+                    CheckForErrors( bks, args.auto_acknowledge)
+
                     while ( now < ttimeout and abs( bks.actual_pos - target_pos_abs ) > eps ):
                         time.sleep(0.02)
                         now = time.time()
 
                     if ( now > ttimeout ):
+                        # check for errors / warnings on a timeout:
+                        CheckForErrors( bks, args.auto_acknowledge)
                         Print( f"Timeout! after {(ttimeout-t0):.3f} s"  )
 
                     Print( f"reached {bks.actual_pos:.1f} mm" )

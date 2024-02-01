@@ -28,7 +28,7 @@ from bkstools.bks_lib import hsm_enums, hms, bks_options
 
 from bkstools.bks_lib.bks_base import BKSBase
 from bkstools.bks_lib.bks_base_common import Str2Value
-from bkstools.bks_lib.debug import Error, Print, Var, ApplicationError, InsufficientAccessRights, InsufficientReadRights, InsufficientWriteRights, g_logmethod  # @UnusedImport
+from bkstools.bks_lib.debug import Error, Debug, Print, Var, ApplicationError, InsufficientAccessRights, InsufficientReadRights, InsufficientWriteRights, g_logmethod  # @UnusedImport
 from bkstools.bks_lib.bks_modbus import RepeaterException
 
 logger = pyschunk.tools.mylogger.getLogger( "BKSTools.bks" )
@@ -486,6 +486,141 @@ def GetTitleFromPeekInput( peek_input ):
 #         r += c
 #     return r
 
+def process( bks, args, parameternames_get, parameterformats, parameternames_set ):
+    #ft = bks.enums[ "fieldbus_type"].GetName( bks.fieldbus_type, "unknown" )  # @UnusedVariable
+
+    #--- List all parameter names if requested:
+    if ( args.list_parameters ):
+        ListParameters( bks )
+        sys.exit(0)
+
+    def PrintHelp( current_file_format, current_time_format ):
+        Print( "\nRecording with %.1fs recording window" % (args.duration) )
+        Print( "  - Press H to reprint this short help" )
+        Print( "  - Press Q (+optional_plot_title) + Return to save recording and quit" )
+        Print( "  - Press S (+optional_plot_title) + Return to save recording and continue recording" )
+        Print( "  - Press CTRL-C to quit without saving" )
+        Print( "  - Current output format is %r.\n    Press G + Return to switch to GPD or C + Return to CSV" % (current_file_format) )
+        if ( current_file_format == ".gpd" ):
+            Print( "  - Current time format is %r.\n    Press A + Return to switch to absolute or R + Return to relatie time" % (current_time_format) )
+
+    #--- Enter loop to print all selected parameters once or cyclically:
+    t0 = time.time()
+    if ( args.duration is None ):
+        # run once
+        tend = t0
+        output_directly = True
+        cyclically = False
+    elif ( args.duration < 0.0):
+        # record forever but report only last args.duration seconds
+        tend = t0 + 24.0*3600.0 # 24h is like forever, right?
+        output_directly = False
+        cyclically = True
+        PrintHelp( g_file_format_name[ args.do_gpd ], g_time_format_name[ args.do_absolute_time ] )
+        PrintD( "Recording started, connected to %s." % (args.host) )
+        peek.Start()
+
+    elif ( args.duration == 0.0):
+        # record forever
+        tend = t0 + 24.0*3600.0 # 24h is like forever, right?
+        output_directly = True
+        cyclically = True
+    elif ( args.duration > 0.0):
+        # record for args.duration seconds only
+        tend = t0 + args.duration
+        output_directly = True
+        cyclically = True
+        Print( "\n" )
+        PrintD( "Starting to record for %.1fs" % (args.duration) )
+
+
+    recording = cRecording( bks, parameternames_get, parameterformats, args.do_gpd, args.do_absolute_time, args.gpd_title, args.output_file_name_without_suffix, output_directly, cyclically, args.duration, args.separator, args.use_comma )
+
+    reconnecting = False
+    t_last = None
+    dt_min = 9999.9
+    dt_max = 0.0
+    dt_sum = 0.0
+    dt_num = 0
+    do_write = True
+    try:
+        while True:
+            now = time.time()
+            if ( t_last ):
+                dt = now- t_last
+                dt_sum += dt
+                dt_num += 1
+                if ( dt < dt_min ):
+                    dt_min = dt
+                if ( dt > dt_max ):
+                    dt_max = dt
+            t_last = now
+
+            if ( recording.AddRecord( now ) ):
+                # not connected, try to reconnect
+                if ( not reconnecting ):
+                    PrintD( "Lost connection to %s. Trying to reconnect..." % (args.host) )
+                    reconnecting = True
+            elif (reconnecting):
+                PrintD( "Reconnected to %s." % (args.host) )
+                reconnecting = False
+
+
+            if ( do_write ):
+                if ( args.write_once ):
+                    do_write = False
+                for a in parameternames_set:
+                    (parametername,value) = a.split("=")
+                    datatype = bks.data[bks.GetIndexOfName( parametername )]["datatype"]
+                    if ( (len(datatype) != 1)  or (datatype[0] != hms.HMS_Datatypes.ABP_CHAR) ):
+                        value = Str2Value( value )
+                    bks.set_value( parametername, value=value )
+
+            if ( peek.InputAvailable() ):
+                peek_input = peek.Getch()
+                # remark:
+                # - when run from a cygwin mintty console then peek_input now contains the full input including cursor movement commands.
+                # - when run from a native windows console then we have to peek for
+                #   more input, but that will yield the final input from the user,
+                #   including inserts, deletions, history retrieval. Good.
+                #print "peek_input=%r" % (peek_input)
+                c = peek_input[0]
+                if ( c in ["q", "Q", "s", "S"] ):
+                    while ( peek.InputAvailable() ):
+                        peek_input += peek.Getch()
+                    title = GetTitleFromPeekInput( peek_input[1:-1] )
+                    if ( len(title) > 0 ):
+                        recording.title = title
+                    recording.SaveOutput()
+
+                    if ( c in ["q", "Q"] ):
+                        break
+                if ( c in ["g", "G"] ):
+                    recording.do_gpd = True
+                    recording.use_comma = False # makes no sense for GPD
+                    PrintD( "Switched output format to GPD")
+                if ( c in ["c", "C"] ):
+                    recording.do_gpd = False
+                    recording.use_comma = args.use_comma
+                    PrintD( "Switched output format to CSV")
+                if ( c in ["a", "A"] ):
+                    recording.do_absolute_time = True
+                    PrintD( "Switched GPD time format to absolute")
+                if ( c in ["r", "R"] ):
+                    recording.do_absolute_time = False
+                    PrintD( "Switched GPD time format to relative")
+                if ( c in ["h", "H"] ):
+                    PrintHelp( g_file_format_name[ recording.do_gpd ], g_time_format_name[ recording.do_absolute_time ])
+                peek.Clear()
+
+            if ( args.period > 0.0 ):
+                time.sleep( args.period )
+
+            if ( now >= tend ):
+                break
+    finally:
+        if ( dt_sum ):
+            PrintD( f"\nStatistics:\n  cycles recorded {dt_num}\n  dt_min {dt_min:.3f}\n  dt_max {dt_max:.3f}\n  dt_avg {dt_sum/dt_num:.3f}" )
 
 def main():
     if ( "__file__" in globals() ):
@@ -564,6 +699,11 @@ def main():
                          action="store_true",
                          help="""Flag, if set then floating point numbers will be output with a comma instead of a dot as decimal point.
                          Usefull for CSV output and easy import into German EXCEL or the like.""" )
+    parser.add_argument( '--write_once',
+                         dest="write_once",
+                         action="store_true",
+                         help="""Flag, if set then when communicating repeatedly (i.e. when -D != None) then the writes are done only once.
+                         Usefull for keeping communication alive after triggering a command that takes longer than the communication timeout.""" )
 
     args = parser.parse_args()
 
@@ -594,118 +734,15 @@ def main():
     #--- Create the BKS object:
     bks = BKSBase( args.host, maxage_s, debug=args.debug, repeater_timeout=args.repeat_timeout, repeater_nb_tries=args.repeat_nb_tries )
 
-    #ft = bks.enums[ "fieldbus_type"].GetName( bks.fieldbus_type, "unknown" )  # @UnusedVariable
-
-    #--- List all parameter names if requested:
-    if ( args.list_parameters ):
-        ListParameters( bks )
-        sys.exit(0)
-
-    def PrintHelp( current_file_format, current_time_format ):
-        Print( "\nRecording with %.1fs recording window" % (args.duration) )
-        Print( "  - Press H to reprint this short help" )
-        Print( "  - Press Q (+optional_plot_title) + Return to save recording and quit" )
-        Print( "  - Press S (+optional_plot_title) + Return to save recording and continue recording" )
-        Print( "  - Press CTRL-C to quit without saving" )
-        Print( "  - Current output format is %r.\n    Press G + Return to switch to GPD or C + Return to CSV" % (current_file_format) )
-        if ( current_file_format == ".gpd" ):
-            Print( "  - Current time format is %r.\n    Press A + Return to switch to absolute or R + Return to relatie time" % (current_time_format) )
-
-    #--- Enter loop to print all selected parameters once or cyclically:
-    t0 = time.time()
-    if ( args.duration is None ):
-        # run once
-        tend = t0
-        output_directly = True
-        cyclically = False
-    elif ( args.duration < 0.0):
-        # record forever but report only last args.duration seconds
-        tend = t0 + 24.0*3600.0 # 24h is like forever, right?
-        output_directly = False
-        cyclically = True
-        PrintHelp( g_file_format_name[ args.do_gpd ], g_time_format_name[ args.do_absolute_time ] )
-        PrintD( "Recording started, connected to %s." % (args.host) )
-        peek.Start()
-
-    elif ( args.duration == 0.0):
-        # record forever
-        tend = t0 + 24.0*3600.0 # 24h is like forever, right?
-        output_directly = True
-        cyclically = True
-    elif ( args.duration > 0.0):
-        # record for args.duration seconds only
-        tend = t0 + args.duration
-        output_directly = True
-        cyclically = True
-        Print( "\n" )
-        PrintD( "Starting to record for %.1fs" % (args.duration) )
-
-
-    recording = cRecording( bks, parameternames_get, parameterformats, args.do_gpd, args.do_absolute_time, args.gpd_title, args.output_file_name_without_suffix, output_directly, cyclically, args.duration, args.separator, args.use_comma )
-
-    reconnecting = False
-    while True:
-        now = time.time()
-        if ( recording.AddRecord( now ) ):
-            # not connected, try to reconnect
-            if ( not reconnecting ):
-                PrintD( "Lost connection to %s. Trying to reconnect..." % (args.host) )
-                reconnecting = True
-        elif (reconnecting):
-            PrintD( "Reconnected to %s." % (args.host) )
-            reconnecting = False
-
-
-        for a in parameternames_set:
-            (parametername,value) = a.split("=")
-            datatype = bks.data[bks.GetIndexOfName( parametername )]["datatype"]
-            if ( (len(datatype) != 1)  or (datatype[0] != hms.HMS_Datatypes.ABP_CHAR) ):
-                value = Str2Value( value )
-            bks.set_value( parametername, value=value )
-
-        if ( peek.InputAvailable() ):
-            peek_input = peek.Getch()
-            # remark:
-            # - when run from a cygwin mintty console then peek_input now contains the full input including cursor movement commands.
-            # - when run from a native windows console then we have to peek for
-            #   more input, but that will yield the final input from the user,
-            #   including inserts, deletions, history retrieval. Good.
-            #print "peek_input=%r" % (peek_input)
-            c = peek_input[0]
-            if ( c in ["q", "Q", "s", "S"] ):
-                while ( peek.InputAvailable() ):
-                    peek_input += peek.Getch()
-                title = GetTitleFromPeekInput( peek_input[1:-1] )
-                if ( len(title) > 0 ):
-                    recording.title = title
-                recording.SaveOutput()
-
-                if ( c in ["q", "Q"] ):
-                    break
-            if ( c in ["g", "G"] ):
-                recording.do_gpd = True
-                recording.use_comma = False # makes no sense for GPD
-                PrintD( "Switched output format to GPD")
-            if ( c in ["c", "C"] ):
-                recording.do_gpd = False
-                recording.use_comma = args.use_comma
-                PrintD( "Switched output format to CSV")
-            if ( c in ["a", "A"] ):
-                recording.do_absolute_time = True
-                PrintD( "Switched GPD time format to absolute")
-            if ( c in ["r", "R"] ):
-                recording.do_absolute_time = False
-                PrintD( "Switched GPD time format to relative")
-            if ( c in ["h", "H"] ):
-                PrintHelp( g_file_format_name[ recording.do_gpd ], g_time_format_name[ recording.do_absolute_time ])
-            peek.Clear()
-
-        if ( args.period > 0.0 ):
-            time.sleep( args.period )
-
-        if ( now >= tend ):
-            break
-
+    try:
+        process( bks, args, parameternames_get, parameterformats, parameternames_set )
+    finally:
+        if ( "mb" in bks.__dict__ ):
+            try:
+                bks.mb.serial.close()
+            except Exception as e:
+                Error( f"Ignoring exception '{type(e)}' = {e} from close")
+    Debug( "main finished" )
 
 if __name__ == '__main__':
     try:
@@ -714,3 +751,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         PrintD( "Interrupted by user." )
     #main()
+    Debug( "__main__ finished" )

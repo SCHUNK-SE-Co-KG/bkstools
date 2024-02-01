@@ -74,6 +74,12 @@ PROJECT_NAME = "bkstools"
 #
 #    From newest to oldest the releases have the following names and features:
 #
+#    - \b 0.0.2.28 2024-06-18
+#      - improved error checking in bks_move
+#      - added caching for constant parameters to avoid unnecessary communication
+#        (e.g. "fieldbus_type" is used many times during initialization
+#      - added --write_once option to bks
+#
 #    - \b 0.0.2.27 2024-06-18
 #      - No functional change. Added stuff for publishing via pip.
 
@@ -93,7 +99,7 @@ PROJECT_NAME = "bkstools"
 #      - Initial internal "release" of the code
 #      - Scripts egi, egi_move and egi_ref are working
 #
-PROJECT_RELEASE = "0.0.2.27"
+PROJECT_RELEASE = "0.0.2.28"
 
 ## \brief Date of the release of the software project.
 #
