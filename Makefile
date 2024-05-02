@@ -72,7 +72,14 @@ mrproper: clean venv-clean
 
 .PHONY: bdist_wheel
 bdist_wheel: 
-	source ./venv/Scripts/activate	
+	if [ -e "./venv/Scripts/activate" ]; then
+	    # running on cygwin/windows
+	    activate="./venv/Scripts/activate"
+	else
+	    # running on Linux
+	    activate="./venv/bin/activate"
+	fi  
+	source "$${activate}"
 	${PYTHON} setup.py $@
 
 .PHONY: bdist_wininst
