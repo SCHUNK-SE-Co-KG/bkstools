@@ -23,7 +23,6 @@ jobs:
 
     - name: Create Virtualenv and Build Wheel
       run: |
-        python -m venv venv
-        source venv/bin/activate
+        python -m venv .venv
         python setup.py venv
         python setup.py bdist_wheel
