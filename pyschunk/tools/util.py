@@ -67,6 +67,7 @@ import os
 import time
 import re
 import argparse
+import threading
 
 # To be able to output colors in windows console we need colorama.
 # This might slow down output, so we only want to import it if
@@ -623,7 +624,8 @@ def SetExitHandler( func, remove=False ):
         except ImportError:
             version = ".".join(map(str, sys.version_info[:2]))
             raise Exception("pywin32 not installed for Python " + version)
-    else:
+    elif threading.current_thread().ident == threading.main_thread().ident:
+        # only set the exit handler for the main thread
         import signal
         signal.signal(signal.SIGTERM, func)
 
