@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  
+    tags:
+      - 'refs/tags/v*' 
 
 jobs:
   build:
@@ -32,3 +34,37 @@ jobs:
       with:
         name: python-wheel
         path: dist/*.whl
+
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')  # Führe diesen Job nur aus, wenn ein Tag gepusht wird
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download Wheel from Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python-wheel
+        path: dist
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: 'New release ${{ github.ref }}'
+        draft: false
+        prerelease: true
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/*.whl
+        asset_name: shunk-${{ github.ref }}.whl
+        asset_content_type: application/octet-stream
