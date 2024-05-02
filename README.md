@@ -1,5 +1,6 @@
 # BKSTools
 
+[![Build Python Wheel](https://github.com/kcinnaySte/bkstools/actions/workflows/build_wheel.yml/badge.svg)](https://github.com/kcinnaySte/bkstools/actions/workflows/build_wheel.yml)
 BKSTools is a Python package for communicating with newer SCHUNK grippers like EGU and EGK. These grippers are called BKS grippers
 since they use the SCHUNK **B**au**K**asten**S**oftware.
 The BKSTools provide ready-to-use command line scripts and an API to interact with the BKS grippers from your own Python code.
