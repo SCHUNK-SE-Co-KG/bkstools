@@ -5,7 +5,7 @@ on:
     branches:
       - main  
     tags:
-      - 'refs/tags/v*' 
+      - 'v*' 
 
 jobs:
   build:
