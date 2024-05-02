@@ -26,3 +26,9 @@ jobs:
         python -m venv .venv
         make venv
         make bdist_wheel
+
+    - name: Upload Wheel as Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-wheel
+        path: dist/*.whl
