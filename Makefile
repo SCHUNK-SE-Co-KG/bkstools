@@ -47,6 +47,8 @@ help:
 	@echo "  - venv            - setup the python virtualenv environment required for building the frozen exes"
 	@echo "  - venv-clean      - remove the python virtualenv environment venv"
 	@echo "  - venv-pip-list   - do a pip list in the virtualenv environment venv"
+	@echo "  - upload_pypi     - dist + pypi_check + upload packages to pypi"
+	@echo "  - pypi_check      - check packages for pypi"
 	
 
 .PHONY: show
@@ -57,7 +59,7 @@ show:
 	@echo "PROJECT_DATE=${PROJECT_DATE}"
 
 .PHONY: dist
-dist: bdist_wheel sdist_bztar exe
+dist: bdist_wheel sdist_tar_gz exe
 # bdist_wininst bdist_wininst64  # bdist_wininst is deprecated! 
 	
 .PHONY: clean
@@ -89,7 +91,13 @@ bdist_wininst64:
 	
 .PHONY: sdist_bztar
 sdist_bztar:
+	source ./venv/Scripts/activate	
 	${PYTHON} setup.py sdist --formats bztar          
+
+.PHONY: sdist_tar_gz
+sdist_tar_gz:
+	source ./venv/Scripts/activate	
+	${PYTHON} setup.py sdist           
 
 #---
 
@@ -115,7 +123,7 @@ venv:
 	    # running on cygwin/windows
 	    activate="./venv/Scripts/activate"
 	    dos2unix $${activate}
-	    extra_packages="pypiwin32 py2exe pydevd"
+	    extra_packages="pypiwin32 py2exe pydevd twine"
 	else
 	    # running on Linux
 	    activate="./venv/bin/activate"
@@ -149,3 +157,20 @@ exes-run:
 	  echo
 	done
 	
+.PHONY: upload_pypi
+upload_pypi: dist pypi_check
+	source ./venv/Scripts/activate	
+	${PYTHON} -m twine upload ./dist/${PROJECT_NAME}-${PROJECT_RELEASE}*.whl ./dist/${PROJECT_NAME}-${PROJECT_RELEASE}*.tar.gz
+
+.PHONY: pypi_check
+pypi_check:
+	source ./venv/Scripts/activate	
+	${PYTHON} -m twine check ./dist/${PROJECT_NAME}-${PROJECT_RELEASE}*.whl ./dist/${PROJECT_NAME}-${PROJECT_RELEASE}*.tar.gz
+	
+	#Check the status of the git repository
+	if [[ -z "$$(git status -s)" ]] then
+	    echo "The repository is clean, good, continuing."
+	else
+	    echo "The repository has uncommitted changes. Cannot upload."
+	    exit 1
+	fi

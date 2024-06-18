@@ -74,6 +74,9 @@ PROJECT_NAME = "bkstools"
 #
 #    From newest to oldest the releases have the following names and features:
 #
+#    - \b 0.0.2.27 2024-06-18
+#      - No functional change. Added stuff for publishing via pip.
+
 #    - \b 0.0.2.26 2024-01-08
 #      - No functional change. Removed hints to future gripper type from descriptions.
 #
@@ -90,11 +93,11 @@ PROJECT_NAME = "bkstools"
 #      - Initial internal "release" of the code
 #      - Scripts egi, egi_move and egi_ref are working
 #
-PROJECT_RELEASE = "0.0.2.26"
+PROJECT_RELEASE = "0.0.2.27"
 
 ## \brief Date of the release of the software project.
 #
 #    \anchor project_date_bkstools
 #    The date of the release of the project.
 #
-PROJECT_DATE = "2024-01-08"
+PROJECT_DATE = "2024-06-18"

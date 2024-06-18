@@ -75,13 +75,17 @@ try:
             PROJECT_RELEASE,  # @UndefinedVariable
 
         description =
-            PROJECT_NAME + ': Tools to interact with SCHUNK BKS grippers via the HTTP/JSON webinterface',
+            PROJECT_NAME + ': Tools to interact with SCHUNK BKS grippers via the HTTP/JSON webinterface or Modbus-RTU',
         long_description =
             long_description,
+        long_description_content_type =
+            'text/markdown',
 
         # The project's main homepage.
         url =
             'https://github.com/SCHUNK-SE-Co-KG/bkstools.git',
+
+        download_url = f'https://github.com/SCHUNK-SE-Co-KG/bkstools/archive/refs/tags/{PROJECT_RELEASE}_{PROJECT_DATE}.tar.gz',
 
         # Author details
         author =
@@ -116,7 +120,7 @@ try:
 
         # What does your project relate to?
         keywords =
-            'SCHUNK BKS EGI EGU EGK',
+            'SCHUNK gripper BKS EGI EGU EGK',
 
         packages = [
             "bkstools",
