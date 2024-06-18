@@ -74,6 +74,9 @@ PROJECT_NAME = "bkstools"
 #
 #    From newest to oldest the releases have the following names and features:
 #
+#    - \b 0.0.2.29 2024-06-18
+#      - improved error / warning output for bks_move (not feasible warnings are now counted properly)
+#
 #    - \b 0.0.2.28 2024-06-18
 #      - improved error checking in bks_move
 #      - added caching for constant parameters to avoid unnecessary communication
@@ -99,7 +102,7 @@ PROJECT_NAME = "bkstools"
 #      - Initial internal "release" of the code
 #      - Scripts egi, egi_move and egi_ref are working
 #
-PROJECT_RELEASE = "0.0.2.28"
+PROJECT_RELEASE = "0.0.2.29"
 
 ## \brief Date of the release of the software project.
 #

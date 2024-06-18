@@ -158,9 +158,10 @@ def main():
                 raise ApplicationError( f"Gripper reports error 0x{err_code:02x} ({ec_str}). Giving Up." )
 
         if ( wrn_code == bks.enums["wrn_code"]["WRN_NOT_FEASIBLE"] ):
+            nb_warnings += 1
             bks.sys_msg_req = 0
             msg = bks.sys_msg_buffer
-            raise ApplicationError( f"Gripper reports command not feasible! Details from syslog: {msg}" )
+            raise ApplicationError( f"Gripper reports command not feasible!\nDetails from syslog: {msg}" )
 
         elif ( wrn_code != 0 ):
             nb_warnings += 1
