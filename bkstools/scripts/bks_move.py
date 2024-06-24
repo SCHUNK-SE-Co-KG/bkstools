@@ -54,6 +54,17 @@ def GetMovementTime( p0, p1, v, a ):
     return abs( (p1-p0) / v ) # TODO: take a into account
 
 
+def GetActualPos( plc_sync_input ):
+    """return actual pos in mm from plc_sync_input
+    (plc_sync_input[1] is two's complement of actual position in µm
+    """
+    pos_um = plc_sync_input[1]
+    if ( pos_um >= 0x8000000 ):
+        return (0xffffffff - pos_um) / -1000.0
+    else:
+        return pos_um / 1000.0
+
+
 def main():
     if ( "__file__" in globals() ):
         prog = os.path.basename( globals()["__file__"] )
@@ -126,7 +137,7 @@ def main():
     bks = BKSBase( args.host, debug=args.debug, repeater_timeout=args.repeat_timeout, repeater_nb_tries=args.repeat_nb_tries )
 
     plc_sync_input = bks.plc_sync_input
-    actual_pos = plc_sync_input[1] / 1000.0
+    actual_pos = GetActualPos( plc_sync_input )
     Print( f"Starting at {actual_pos:.1f} mm" )
 
     bks.command_code = eCmdCode.CMD_ACK
@@ -238,7 +249,7 @@ def main():
                         # check for errors / warnings once after command code was set:
                         CheckForErrors( bks, args.auto_acknowledge, plc_sync_input )
 
-                        actual_pos = plc_sync_input[1] / 1000.0  # plc_sync_input[1] is actual position in µm
+                        actual_pos = actual_pos = GetActualPos( plc_sync_input )
 
                         if ( abs( actual_pos - target_pos_abs ) <= eps ):
                             break
