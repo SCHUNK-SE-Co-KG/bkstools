@@ -125,7 +125,9 @@ def main():
 
     bks = BKSBase( args.host, debug=args.debug, repeater_timeout=args.repeat_timeout, repeater_nb_tries=args.repeat_nb_tries )
 
-    Print( f"Starting at {bks.actual_pos:.1f} mm" )
+    plc_sync_input = bks.plc_sync_input
+    actual_pos = plc_sync_input[1] / 1000.0
+    Print( f"Starting at {actual_pos:.1f} mm" )
 
     bks.command_code = eCmdCode.CMD_ACK
 
@@ -134,11 +136,15 @@ def main():
     nb_errors = 0
     nb_warnings = 0
 
-    def CheckForErrors( bks, auto_acknowledge ):
+    def CheckForErrors( bks, auto_acknowledge, plc_sync_input=None ):
         #--- Check for errors / warnings:
         nonlocal nb_errors, nb_warnings
-        err_code = bks.err_code
-        wrn_code = bks.wrn_code
+
+        if ( plc_sync_input is None ):
+            # If not given then read error and warning code from plc_sync_input to reset ERR_COMM_LOST timeout in the firmware
+            plc_sync_input = bks.plc_sync_input
+        err_code = plc_sync_input[3] & 0x00ff
+        wrn_code = plc_sync_input[2] & 0x00ff
 
         try:
             wc_str = bks.enums["wrn_code"].GetName(wrn_code, "?" )
@@ -150,12 +156,15 @@ def main():
             ec_str = "?"
 
         if ( err_code != 0 ):
+            nb_errors += 1
+            bks.sys_msg_req = 0
+            msg = bks.sys_msg_buffer
             if ( auto_acknowledge ):
                 bks.command_code = eCmdCode.CMD_ACK
-                Print( f"!!!\n!!! Gripper reports error 0x{err_code:02x} ({ec_str}). Ignored!\n!!!" )
+                Print( f"!!!\n!!! Gripper reports error 0x{err_code:02x} ({ec_str}). Ignored!\nDetails from syslog: {msg}\n!!!" )
                 nb_errors += 1
             else:
-                raise ApplicationError( f"Gripper reports error 0x{err_code:02x} ({ec_str}). Giving Up." )
+                raise ApplicationError( f"Gripper reports error 0x{err_code:02x} ({ec_str}). Giving Up.\nDetails from syslog: {msg}" )
 
         if ( wrn_code == bks.enums["wrn_code"]["WRN_NOT_FEASIBLE"] ):
             nb_warnings += 1
@@ -181,7 +190,12 @@ def main():
                         if ( p.startswith( "stay") ):
                             T = float( re.sub( r"stay\s*(\d+(\.\d*)?|\.\d+)s?", r"\1", p ) )
                             Print( f"pausing for {T:.3f}s ..." )
-                            time.sleep( T )
+
+                            t_pause_end = time.time() + T
+                            while ( time.time() < t_pause_end ):
+                                time.sleep( min( 0.1, T ) )
+                                CheckForErrors( bks, args.auto_acknowledge)
+
                             continue
                         if ( p.endswith( "r" ) ):
                             p = float( re.sub( r"([+-]?\d+(\.\d*)?|[+-]?\.\d+)r", r"\1", p ) )
@@ -206,7 +220,7 @@ def main():
                             input( f"Press RETURN to move relative by {p:.1f} mm with {v:.1f} mm/s..." )
                         Print( f"moving relative by {p:.1f} mm with {v:.1f} mm/s ..." )
                         bks.command_code = eCmdCode.MOVE_POS_REL
-                        target_pos_abs = bks.actual_pos+p
+                        target_pos_abs = actual_pos+p
                     else:
                         if ( args.interactive ):
                             input( f"Press RETURN to move absolute to {p:.1f} mm with {v:.1f} mm/s..." )
@@ -216,21 +230,25 @@ def main():
 
                     now = time.time()
                     t0 = now
-                    ttimeout = t0 + GetMovementTime( bks.actual_pos, target_pos_abs, v, a ) + 1.0
+                    t_timeout = t0 + GetMovementTime( actual_pos, target_pos_abs, v, a ) + 1.0
 
-                    # check for errors / warnings once after command code was set:
-                    CheckForErrors( bks, args.auto_acknowledge)
 
-                    while ( now < ttimeout and abs( bks.actual_pos - target_pos_abs ) > eps ):
+                    while ( now < t_timeout ):
+                        plc_sync_input = bks.plc_sync_input
+                        # check for errors / warnings once after command code was set:
+                        CheckForErrors( bks, args.auto_acknowledge, plc_sync_input )
+
+                        actual_pos = plc_sync_input[1] / 1000.0  # plc_sync_input[1] is actual position in µm
+
+                        if ( abs( actual_pos - target_pos_abs ) <= eps ):
+                            break
                         time.sleep(0.02)
                         now = time.time()
 
-                    if ( now > ttimeout ):
-                        # check for errors / warnings on a timeout:
-                        CheckForErrors( bks, args.auto_acknowledge)
-                        Print( f"Timeout! after {(ttimeout-t0):.3f} s"  )
+                    if ( now > t_timeout ):
+                        Print( f"Timeout! after {(t_timeout-t0):.3f} s"  )
 
-                    Print( f"reached {bks.actual_pos:.1f} mm" )
+                    Print( f"reached {actual_pos:.1f} mm" )
                     time.sleep( args.wait_after_pos_reached )
                 looping = args.loop
                 nb_loops += 1
@@ -243,7 +261,7 @@ def main():
     finally:
         Print( "\n===" )
         try:
-            Print( f"finally reached {bks.actual_pos:.1f} mm after {nb_loops} movement cycles." )
+            Print( f"finally reached {actual_pos:.1f} mm after {nb_loops} movement cycles." )
         except Exception:
             pass
         Print( f"Gripper reported {nb_errors} errors and {nb_warnings} warnings." )

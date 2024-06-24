@@ -74,6 +74,12 @@ PROJECT_NAME = "bkstools"
 #
 #    From newest to oldest the releases have the following names and features:
 #
+#    - \b 0.0.2.30 2024-06-24
+#      - made bks_move more robust, it now avoids ERR_COMM_LOST errors by
+#        reading plc_sync_input cyclically while waiting for movement end.
+#        (This is only required if a previous command like bks_grip triggered the
+#         communication lost surveilance in the firmware)
+#
 #    - \b 0.0.2.29 2024-06-18
 #      - improved error / warning output for bks_move (not feasible warnings are now counted properly)
 #
@@ -102,11 +108,11 @@ PROJECT_NAME = "bkstools"
 #      - Initial internal "release" of the code
 #      - Scripts egi, egi_move and egi_ref are working
 #
-PROJECT_RELEASE = "0.0.2.29"
+PROJECT_RELEASE = "0.0.2.30"
 
 ## \brief Date of the release of the software project.
 #
 #    \anchor project_date_bkstools
 #    The date of the release of the project.
 #
-PROJECT_DATE = "2024-06-18"
+PROJECT_DATE = "2024-06-24"
