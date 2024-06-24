@@ -159,7 +159,10 @@ exes-run:
 	
 .PHONY: upload_pypi
 upload_pypi: dist pypi_check
-	source ./venv/Scripts/activate	
+	source ./venv/Scripts/activate
+	export TWINE_CERT=$$(cygpath -w ~/winhome/Documents/Zertifikate/secure08-lithium-com.cer)	
+	@echo "Allowing corporate self-signed certificate from file \"$${TWINE_CERT}\""
+	@echo "Please provide your \"pypi-*\" API token when asked..."
 	${PYTHON} -m twine upload ./dist/${PROJECT_NAME}-${PROJECT_RELEASE}*.whl ./dist/${PROJECT_NAME}-${PROJECT_RELEASE}*.tar.gz
 
 .PHONY: pypi_check
