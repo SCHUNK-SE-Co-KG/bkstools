@@ -1,0 +1,217 @@
+{
+  "timestamp": "2026-02-19T06:41:35Z",
+  "repository": "SCHUNK-SE-Co-KG/bkstools",
+  "dependencies_scanned": 5,
+  "vulnerabilities_found": 11,
+  "high_severity_count": 5,
+  "dependencies": [
+    {
+      "name": "requests",
+      "version": "2.26.0",
+      "ecosystem": "PyPI",
+      "source": "setup.py"
+    },
+    {
+      "name": "PyYAML",
+      "version": "5.4.1",
+      "ecosystem": "PyPI",
+      "source": "setup.py"
+    },
+    {
+      "name": "minimalmodbus",
+      "version": "2.0.1",
+      "ecosystem": "PyPI",
+      "source": "setup.py"
+    },
+    {
+      "name": "wrapt",
+      "version": "",
+      "ecosystem": "PyPI",
+      "source": "setup.py"
+    },
+    {
+      "name": "pypiwin32",
+      "version": "",
+      "ecosystem": "PyPI",
+      "source": "setup.py"
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "vuln_id": "GHSA-9hjg-9r4m-mvj7",
+      "summary": "Requests vulnerable to .netrc credentials leak via malicious URLs",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "affected_package": "PyPI:requests@2.26.0",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-9hjg-9r4m-mvj7"
+      ],
+      "aliases": [
+        "GHSA-9hjg-9r4m-mvj7",
+        "CVE-2024-47081"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-9wx4-h78v-vm56",
+      "summary": "Requests `Session` object does not verify requests after making first request with verify=False",
+      "severity": "medium",
+      "cvss_score": 5.6,
+      "affected_package": "PyPI:requests@2.26.0",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-9wx4-h78v-vm56"
+      ],
+      "aliases": [
+        "GHSA-9wx4-h78v-vm56",
+        "CVE-2024-35195"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-j8r2-6x86-q33q",
+      "summary": "Unintended leak of Proxy-Authorization header in requests",
+      "severity": "medium",
+      "cvss_score": 6.1,
+      "affected_package": "PyPI:requests@2.26.0",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-j8r2-6x86-q33q"
+      ],
+      "aliases": [
+        "GHSA-j8r2-6x86-q33q",
+        "CVE-2023-32681"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-cfj3-7x9c-4p3h",
+      "summary": "Exposure of Sensitive Information to an Unauthorized Actor in Requests",
+      "severity": "medium",
+      "cvss_score": 6.9,
+      "affected_package": "PyPI:requests@2.26.0",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-cfj3-7x9c-4p3h"
+      ],
+      "aliases": [
+        "GHSA-cfj3-7x9c-4p3h",
+        "CVE-2014-1829"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-652x-xj99-gmcc",
+      "summary": "Exposure of Sensitive Information to an Unauthorized Actor in Requests",
+      "severity": "medium",
+      "cvss_score": 6.9,
+      "affected_package": "PyPI:requests@2.26.0",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-652x-xj99-gmcc"
+      ],
+      "aliases": [
+        "GHSA-652x-xj99-gmcc",
+        "CVE-2014-1830"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-pg2w-x9wp-vw92",
+      "summary": "Python Requests Session Fixation",
+      "severity": "medium",
+      "cvss_score": 5.0,
+      "affected_package": "PyPI:requests@2.26.0",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-pg2w-x9wp-vw92"
+      ],
+      "aliases": [
+        "GHSA-pg2w-x9wp-vw92",
+        "CVE-2015-2296"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-x84v-xcm2-53pg",
+      "summary": "Insufficiently Protected Credentials in Requests",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "affected_package": "PyPI:requests@2.26.0",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-x84v-xcm2-53pg"
+      ],
+      "aliases": [
+        "GHSA-x84v-xcm2-53pg",
+        "CVE-2018-18074"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-3pqx-4fqf-j49f",
+      "summary": "Deserialization of Untrusted Data in PyYAML",
+      "severity": "critical",
+      "cvss_score": 9.3,
+      "affected_package": "PyPI:PyYAML@5.4.1",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-3pqx-4fqf-j49f"
+      ],
+      "aliases": [
+        "GHSA-3pqx-4fqf-j49f",
+        "CVE-2019-20477"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-6757-jp84-gxfx",
+      "summary": "Improper Input Validation in PyYAML",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "affected_package": "PyPI:PyYAML@5.4.1",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-6757-jp84-gxfx"
+      ],
+      "aliases": [
+        "GHSA-6757-jp84-gxfx",
+        "CVE-2020-1747"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-8q59-q68h-6hv4",
+      "summary": "Improper Input Validation in PyYAML",
+      "severity": "critical",
+      "cvss_score": 9.3,
+      "affected_package": "PyPI:PyYAML@5.4.1",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-8q59-q68h-6hv4"
+      ],
+      "aliases": [
+        "GHSA-8q59-q68h-6hv4",
+        "CVE-2020-14343"
+      ]
+    },
+    {
+      "vuln_id": "GHSA-rprw-h62v-c2w7",
+      "summary": "PyYAML insecurely deserializes YAML strings leading to arbitrary code execution",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "affected_package": "PyPI:PyYAML@5.4.1",
+      "affected_versions": "",
+      "fixed_version": "–",
+      "references": [
+        "https://github.com/advisories/GHSA-rprw-h62v-c2w7"
+      ],
+      "aliases": [
+        "GHSA-rprw-h62v-c2w7",
+        "CVE-2017-18342"
+      ]
+    }
+  ]
+}

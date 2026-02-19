@@ -1,0 +1,47 @@
+CVE Alert: Critical vulnerabilities in bkstools
+====================================================================
+
+Scan timestamp: 2026-02-19T06:41:35Z
+Repository:     SCHUNK-SE-Co-KG/bkstools
+Vulnerabilities: 11 total, 5 with CVSS >= 7.0
+
+--------------------------------------------------------------------
+
+  GHSA-x84v-xcm2-53pg  (CVSS 7.5)
+  Package:     PyPI:requests@2.26.0
+  CVE:         CVE-2018-18074
+  Fix version: –
+  Insufficiently Protected Credentials in Requests
+  -> https://github.com/advisories/GHSA-x84v-xcm2-53pg
+
+  GHSA-3pqx-4fqf-j49f  (CVSS 9.3)
+  Package:     PyPI:PyYAML@5.4.1
+  CVE:         CVE-2019-20477
+  Fix version: –
+  Deserialization of Untrusted Data in PyYAML
+  -> https://github.com/advisories/GHSA-3pqx-4fqf-j49f
+
+  GHSA-6757-jp84-gxfx  (CVSS 9.8)
+  Package:     PyPI:PyYAML@5.4.1
+  CVE:         CVE-2020-1747
+  Fix version: –
+  Improper Input Validation in PyYAML
+  -> https://github.com/advisories/GHSA-6757-jp84-gxfx
+
+  GHSA-8q59-q68h-6hv4  (CVSS 9.3)
+  Package:     PyPI:PyYAML@5.4.1
+  CVE:         CVE-2020-14343
+  Fix version: –
+  Improper Input Validation in PyYAML
+  -> https://github.com/advisories/GHSA-8q59-q68h-6hv4
+
+  GHSA-rprw-h62v-c2w7  (CVSS 9.8)
+  Package:     PyPI:PyYAML@5.4.1
+  CVE:         CVE-2017-18342
+  Fix version: –
+  PyYAML insecurely deserializes YAML strings leading to arbitrary code execution
+  -> https://github.com/advisories/GHSA-rprw-h62v-c2w7
+
+--------------------------------------------------------------------
+Full report: security/reports/cve_report.md
+https://github.com/SCHUNK-SE-Co-KG/bkstools/blob/main/security/reports/cve_report.md
